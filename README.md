@@ -78,8 +78,9 @@ polling and commands through `accloud.intesis.com/device/setVal`. The portal
 is currently supported only for `device_type="IntesisHome"`; other brands
 return `False` for commands without a working TCP connection.
 
-The portal login is cached, but each request uses a fresh connection to avoid
-disconnects when reusing the server's connections. Accepted commands schedule
+The portal login is cached and consecutive commands reuse the connection.
+Connections idle for three seconds are retired before the portal closes them.
+Accepted commands schedule
 one background refresh three seconds after the last command, allowing the
 cloud state to catch up without delaying the command's return. Acceptance
 does not prove that the physical device has applied the setting; polls confirm

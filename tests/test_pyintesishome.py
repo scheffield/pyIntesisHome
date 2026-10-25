@@ -1129,7 +1129,7 @@ async def test_https_only_failure_does_not_attempt_tcp(mock_aioresponse):  # noq
 
 
 @pytest.mark.asyncio
-async def test_portal_keeps_login_without_reusing_connections(
+async def test_portal_reuses_connections_only_within_idle_timeout(
     aiohttp_server,
     mock_aioresponse,  # noqa: F811
 ):
@@ -1167,11 +1167,14 @@ async def test_portal_keeps_login_without_reusing_connections(
             try:
                 assert await controller.set_temperature(MOCK_DEVICE_ID, 22) is True
                 assert await controller.set_temperature(MOCK_DEVICE_ID, 23) is True
+                await asyncio.sleep(3.1)
+                assert await controller.set_temperature(MOCK_DEVICE_ID, 24) is True
             finally:
                 await controller.stop()
-    assert values == ["220", "230"]
+    assert values == ["220", "230", "240"]
     assert len(logins) == 1
-    assert len(transports) == len(set(transports)) == 5
+    assert len(set(transports[:5])) == 1
+    assert transports[-1] is not transports[0]
 
 
 @pytest.mark.asyncio

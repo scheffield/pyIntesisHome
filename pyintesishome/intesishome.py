@@ -784,7 +784,8 @@ class IntesisHome(IntesisBase):
             self._portal_session = aiohttp.ClientSession(
                 headers={"User-Agent": PORTAL_USER_AGENT},
                 timeout=aiohttp.ClientTimeout(total=PORTAL_TIMEOUT),
-                connector=aiohttp.TCPConnector(force_close=True),
+                # Reuse command bursts, but retire before the portal's idle close.
+                connector=aiohttp.TCPConnector(keepalive_timeout=3),
             )
         base = PORTAL_URL[self._device_type]
         async with self._portal_session.get(f"{base}/login") as resp:
